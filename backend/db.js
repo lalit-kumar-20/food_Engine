@@ -1,26 +1,31 @@
-const mongoose = require('mongoose')
-// const mongoDbClient = require("mongodb").MongoClient
-const mongoURI = 'mongodb://<!#@!#@>:"!@!@"@merncluster-shard-00-00.d1d4z.mongodb.net:27017,merncluster-shard-00-01.d1d4z.mongodb.net:27017,merncluster-shard-00-02.d1d4z.mongodb.net:27017/Customer?ssl=true&replicaSet=atlas-eusy5p-shard-0&authSource=admin&retryWrites=true&w=majority' // Customer change url to your db you created in atlas
-// mongodb://<username>:<password>@merncluster-shard-00-00.d1d4z.mongodb.net:27017,merncluster-shard-00-01.d1d4z.mongodb.net:27017,merncluster-shard-00-02.d1d4z.mongodb.net:27017/?ssl=true&replicaSet=atlas-eusy5p-shard-0&authSource=admin&retryWrites=true&w=majority
-module.exports = function (callback) {
-    mongoose.connect(mongoURI, { useNewUrlParser: true }, async (err, result) => {
-        // mongoDbClient.connect(mongoURI, { useNewUrlParser: true }, async(err, result) => {
-        if (err) console.log("---" + err)
-        else {
-            // var database =
-            console.log("connected to mongo")
-            const foodCollection = await mongoose.connection.db.collection("food_items");
-            foodCollection.find({}).toArray(async function (err, data) {
-                const categoryCollection = await mongoose.connection.db.collection("Categories");
-                categoryCollection.find({}).toArray(async function (err, Catdata) {
-                    callback(err, data, Catdata);
 
-                })
-            });
-            // listCollections({name: 'food_items'}).toArray(function (err, database) {
-            // });
-            //     module.exports.Collection = database;
-            // });
-        }
-    })
+
+
+const mongoose = require('mongoose');
+
+const mongoURI = 'mongodb://localhost:27017';
+
+module.exports = async function () {
+  try {
+    const connection = await mongoose.connect(mongoURI, { useNewUrlParser: true });
+    console.log('Connected to MongoDB');
+    
+    if (!connection) {
+      throw new Error('MongoDB connection not established yet.');
+    }
+
+    const db = connection.connection.db; // Access the database instance
+
+    const foodCollection = db.collection(db.food_items);
+    console.log(foodCollection)
+    const data = await foodCollection.find({}).toArray();
+
+    const categoryCollection = db.collection('foodcategary');
+    const Catdata = await categoryCollection.find({}).toArray();
+
+    return { data, Catdata };
+  } catch (err) {
+    console.error('Error connecting to MongoDB:', err);
+    throw err; // Rethrow the error for handling at a higher level if needed.
+  }
 };
